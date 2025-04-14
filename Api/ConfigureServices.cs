@@ -1,7 +1,6 @@
 using System.Reflection;
 using Business.Helpers;
 using Business.Services;
-using Dapper;
 using FluentMigrator.Runner;
 using FluentValidation.AspNetCore;
 using Infrastructure.Settings;
