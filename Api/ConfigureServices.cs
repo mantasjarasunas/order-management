@@ -1,0 +1,126 @@
+using System.Reflection;
+using Business.Helpers;
+using Business.Services;
+using Dapper;
+using FluentMigrator.Runner;
+using FluentValidation.AspNetCore;
+using Infrastructure.Settings;
+using Microsoft.OpenApi.Models;
+using Persistence.Infrastructure;
+using Persistence.Migrations;
+
+namespace order_management_api;
+
+public static class ConfigureServices
+{
+    public static IServiceCollection AddApiServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        var serviceProvider = CreateServices(configuration);
+        ConfigureSettings(services, configuration);
+
+        using (var scope = serviceProvider.CreateScope())
+        {
+            Database.EnsureDatabase(
+                configuration.GetConnectionString("SqlConnection"),
+                configuration.GetValue<string>("DataBase:Name")
+            );
+            UpdateDatabase(scope.ServiceProvider);
+        }
+
+        services.AddControllers();
+
+        services.AddFluentValidation(cfg =>
+            cfg.RegisterValidatorsFromAssemblyContaining<Program>());
+
+        services.AddTransient<IDbConnectionFactory>(_ =>
+        {
+            return new DbConnectionFactory(() =>
+            {
+                var connection = new Npgsql.NpgsqlConnection(configuration.GetConnectionString("PostgresConnection"));
+                connection.Open();
+                return connection;
+            });
+        });
+        
+        RegisterBusinessServices(services);
+        RegisterRepositories(services);
+
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Order Management API", Version = "v1" });
+        });
+
+        return services;
+    }
+
+    private static void RegisterRepositories(IServiceCollection services)
+    {
+        services.AddScoped<IDbContext, DbContext>();
+        var repositories = Assembly.GetAssembly(typeof(DbRepository))
+            ?.GetTypes().Where(t=>t.Namespace != null && t.Namespace.Contains("Repositories")).ToList();
+
+        if (repositories != null)
+        {
+            foreach (var repositoryInterface in repositories.Where(t => t.IsInterface))
+            {
+                var implementation = repositories.FirstOrDefault(c => c.IsClass && repositoryInterface.Name[1..] == c.Name);
+                
+                if (implementation != null)
+                {
+                    services.AddScoped(repositoryInterface, implementation);
+                }
+            }
+        }
+    }
+        
+    private static void RegisterBusinessServices(IServiceCollection services)
+    {
+        var assembly = Assembly.GetAssembly(typeof(IProductService));
+
+        var businessServices = assembly
+            .GetTypes()
+            .Where(t => t.Namespace != null && t.Namespace.Contains("Services"))
+            .ToList();
+
+        foreach (var serviceInterface in businessServices.Where(t => t.IsInterface))
+        {
+            var implementation = businessServices
+                .FirstOrDefault(c => c.IsClass && serviceInterface.Name[1..] == c.Name);
+
+            if (implementation != null)
+            {
+                services.AddTransient(serviceInterface, implementation);
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Configure the dependency injection services
+    /// </summary>
+    private static IServiceProvider CreateServices(IConfiguration configuration)
+    {
+        return new ServiceCollection()
+            .AddFluentMigratorCore()
+            .ConfigureRunner(rb => rb
+                .AddPostgres()
+                .WithGlobalConnectionString(configuration.GetConnectionString("PostgresConnection"))
+                .ScanIn(typeof(CreateProductsTable).Assembly).For.Migrations())
+            .AddLogging(lb => lb.AddFluentMigratorConsole())
+            .BuildServiceProvider(false);
+    }
+    
+    private static void ConfigureSettings(IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
+        ConfigurationHelper.Initialize(configuration);
+    }
+    
+    /// <summary>
+    /// Update the database
+    /// </summary>
+    private static void UpdateDatabase(IServiceProvider serviceProvider)
+    {
+        var runner = serviceProvider.GetRequiredService<IMigrationRunner>();
+        runner.MigrateUp();
+    }
+}
