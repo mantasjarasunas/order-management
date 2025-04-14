@@ -20,7 +20,7 @@ public static class ConfigureServices
         using (var scope = serviceProvider.CreateScope())
         {
             Database.EnsureDatabase(
-                configuration.GetConnectionString("SqlConnection"),
+                configuration.GetConnectionString("PostgresConnection"),
                 configuration.GetValue<string>("DataBase:Name")
             );
             UpdateDatabase(scope.ServiceProvider);

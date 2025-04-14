@@ -4,7 +4,8 @@ namespace Domain.Shared
 {
     public class PagedList<T>
     {
-        public IEnumerable<T> Items { get; set; }
+        public IEnumerable<T> Items { get; set; } = [];
+        
         public int TotalCount { get; set; }
     }
 }
