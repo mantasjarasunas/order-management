@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:14
+    restart: unless-stopped
+    container_name: order-management-db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: order_management
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - order-management-db:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: order-management-api
+    depends_on:
+      - db
+    ports:
+      - "5000:80"
+    environment:
+      ConnectionStrings__PostgresConnection: "Host=db;Port=5432;Database=order_management;Username=postgres;Password=admin"
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:80
+
+volumes:
+  order-management-db:
