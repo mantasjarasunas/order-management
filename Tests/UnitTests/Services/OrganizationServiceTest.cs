@@ -4,11 +4,12 @@ using Domain.Product;
 using Moq;
 using Persistence.Infrastructure;
 using Persistence.Repositories;
+using Tests.Infrastructure;
 using Xunit;
 
 namespace Tests.UnitTests.Services;
 
-public class ProductServiceTest
+public class ProductServiceTest : UnitTestBase
 {
     private readonly Mock<IDbContext> _dbContextMock = new();
     private readonly Mock<IProductRepository> _productRepositoryMock = new();
@@ -21,13 +22,7 @@ public class ProductServiceTest
 
         await service.CreateProductAsync(product);
 
-        _productRepositoryMock.Verify(r => r.CreateProductAsync(
-            It.Is<CreateProductRequestModel>(m =>
-                m.Name == product.Name &&
-                m.Price == product.Price
-            )
-        ), Times.Once);
-
+        _productRepositoryMock.Verify(r => r.CreateProductAsync(IsDeep(product)), Times.Once);
         _dbContextMock.Verify(db => db.Commit(), Times.Once);
     }
 }
