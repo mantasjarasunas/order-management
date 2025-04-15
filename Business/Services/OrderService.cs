@@ -8,6 +8,7 @@ public interface IOrderService
 {
     Task CreateOrderAsync(CreateOrderRequestModel model);
     Task<List<OrderListItem>> GetOrdersAsync();
+    Task<OrderInvoiceSummaryModel> GetOrderInvoiceAsync(long orderId);
 }
 
 public class OrderService(IOrderRepository orderRepository, IDbContext dbContext) : IOrderService
@@ -21,5 +22,17 @@ public class OrderService(IOrderRepository orderRepository, IDbContext dbContext
     public async Task<List<OrderListItem>> GetOrdersAsync()
     {
         return await orderRepository.GetOrdersAsync();
+    }
+    
+    public async Task<OrderInvoiceSummaryModel> GetOrderInvoiceAsync(long orderId)
+    {
+        var items = await orderRepository.GetOrderInvoiceItemsAsync(orderId);
+        var total = items.Sum(x => x.Amount);
+
+        return new OrderInvoiceSummaryModel
+        {
+            Items = items,
+            TotalAmount = total
+        };
     }
 }

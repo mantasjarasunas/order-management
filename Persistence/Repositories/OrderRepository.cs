@@ -9,6 +9,7 @@ public interface IOrderRepository
 {
     Task CreateOrderAsync(CreateOrderRequestModel model);
     Task<List<OrderListItem>> GetOrdersAsync();
+    Task<List<OrderInvoiceItemModel>> GetOrderInvoiceItemsAsync(long orderId);
 }
 
 public class OrderRepository(IDbContext dbContext) : DbRepository(dbContext), IOrderRepository
@@ -43,7 +44,7 @@ public class OrderRepository(IDbContext dbContext) : DbRepository(dbContext), IO
             SELECT 
                 o.id AS OrderId,
                 o.created_at AS CreatedAt,
-                p.id AS Id,
+                p.id AS ProductId,
                 p.name AS Name,
                 p.price AS Price,
                 op.quantity AS Quantity
@@ -73,5 +74,30 @@ public class OrderRepository(IDbContext dbContext) : DbRepository(dbContext), IO
         );
 
         return orderDict.Values.ToList();
+    }
+
+    public async Task<List<OrderInvoiceItemModel>> GetOrderInvoiceItemsAsync(long orderId)
+    {
+        var sql = @"
+            SELECT 
+                p.name AS Name,
+                op.quantity AS Quantity,
+                p.discount_percentage AS DiscountPercentage,
+                ROUND(
+                    op.quantity * p.price * 
+                    CASE 
+                        WHEN p.discount_percentage IS NOT NULL 
+                        THEN (1 - p.discount_percentage / 100.0)
+                        ELSE 1 
+                    END, 
+                2) AS Amount
+            FROM order_products op
+            INNER JOIN products p ON p.id = op.product_id
+            WHERE op.order_id = @OrderId;
+        ";
+
+        var result = await Connection.QueryAsync<OrderInvoiceItemModel>(sql, new { OrderId = orderId });
+        
+        return result.ToList();
     }
 }
