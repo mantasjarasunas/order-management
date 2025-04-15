@@ -21,9 +21,9 @@ public class OrderController(IOrderService orderService) : ControllerBase
         await orderService.CreateOrderAsync(model);
         return Ok();
     }
-
+    
     /// <summary>
-    /// Retrieves a list of all orders.
+    /// Retrieves a list of all orders and more.
     /// </summary>
     [HttpGet]
     public async Task<ActionResult> GetOrders()
