@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [ develop ]
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_OWNER: mantasjarasunas
-  IMAGE_REPO: order-management-api
-
 jobs:
   publish-image:
     runs-on: ubuntu-latest
@@ -25,16 +20,10 @@ jobs:
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract Docker image metadata
         id: meta
         uses: docker/metadata-action@v4
-        with:
-          images: "${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}"
       
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
