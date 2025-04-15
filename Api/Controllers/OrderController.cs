@@ -42,4 +42,14 @@ public class OrderController(IOrderService orderService) : ControllerBase
         var result = await orderService.GetOrderInvoiceAsync(orderId);
         return Ok(result);
     }
+    
+    /// <summary>
+    /// Retrieves report with a list of discounted products
+    /// </summary>
+    [HttpGet("discounted-products")]
+    public async Task<ActionResult<List<DiscountedOrderProductsListItemModel>>> GetDiscountedProducts()
+    {
+        var report = await orderService.GetDiscountedProductsAsync();
+        return Ok(report);
+    }
 }
