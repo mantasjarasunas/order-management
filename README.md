@@ -101,7 +101,7 @@ dotnet test
 ## Contact
 
 **Mantas Jarašūnas**  
-jarasunas29@gmail.com  
+jarasunas29@gmail.com 
 [GitHub Profile](https://github.com/mantasjarasunas)
 
 ---
