@@ -71,6 +71,8 @@ Example use cases:
 - **Apply product discounts**
 - **Place order**
 - **Get all orders**
+- **Get order invoice data**
+- **Get order discounted products**
 
 ---
 

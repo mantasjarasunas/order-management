@@ -10,6 +10,7 @@ public interface IOrderRepository
     Task CreateOrderAsync(CreateOrderRequestModel model);
     Task<List<OrderListItem>> GetOrdersAsync();
     Task<List<OrderInvoiceItemModel>> GetOrderInvoiceItemsAsync(long orderId);
+    Task<List<DiscountedOrderProductsListItemModel>> GetDiscountedProductsAsync();
 }
 
 public class OrderRepository(IDbContext dbContext) : DbRepository(dbContext), IOrderRepository
@@ -40,7 +41,7 @@ public class OrderRepository(IDbContext dbContext) : DbRepository(dbContext), IO
     
     public async Task<List<OrderListItem>> GetOrdersAsync()
     {
-        const string sql = @"
+        const string query = @"
             SELECT 
                 o.id AS OrderId,
                 o.created_at AS CreatedAt,
@@ -57,7 +58,7 @@ public class OrderRepository(IDbContext dbContext) : DbRepository(dbContext), IO
         var orderDict = new Dictionary<long, OrderListItem>();
 
         var result = await Connection.QueryAsync<OrderListItem, ProductListItemModel, OrderListItem>(
-            sql,
+            query,
             (order, product) =>
             {
                 if (!orderDict.TryGetValue(order.OrderId, out var currentOrder))
@@ -78,7 +79,7 @@ public class OrderRepository(IDbContext dbContext) : DbRepository(dbContext), IO
 
     public async Task<List<OrderInvoiceItemModel>> GetOrderInvoiceItemsAsync(long orderId)
     {
-        var sql = @"
+        var query = @"
             SELECT 
                 p.name AS Name,
                 op.quantity AS Quantity,
@@ -96,7 +97,27 @@ public class OrderRepository(IDbContext dbContext) : DbRepository(dbContext), IO
             WHERE op.order_id = @OrderId;
         ";
 
-        var result = await Connection.QueryAsync<OrderInvoiceItemModel>(sql, new { OrderId = orderId });
+        var result = await Connection.QueryAsync<OrderInvoiceItemModel>(query, new { OrderId = orderId });
+        
+        return result.ToList();
+    }
+
+    public async Task<List<DiscountedOrderProductsListItemModel>> GetDiscountedProductsAsync()
+    {
+        const string query = @"
+            SELECT 
+                p.name AS ProductName,
+                p.discount_percentage AS DiscountPercentage,
+                COUNT(DISTINCT o.id) AS OrdersCount,
+                ROUND(SUM(op.quantity * p.price * (1 - COALESCE(p.discount_percentage, 0) / 100.0)), 2) AS TotalAmountOrdered
+            FROM order_products op
+            JOIN products p ON op.product_id = p.id
+            JOIN orders o ON op.order_id = o.id
+            WHERE p.discount_percentage IS NOT NULL
+            GROUP BY p.id, p.name, p.discount_percentage
+            ORDER BY TotalAmountOrdered DESC;";
+        
+        var result = await Connection.QueryAsync<DiscountedOrderProductsListItemModel>(query);
         
         return result.ToList();
     }
