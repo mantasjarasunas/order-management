@@ -46,9 +46,18 @@ public static class ConfigureServices
 
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Order Management API", Version = "v1" });
-        });
+            c.SwaggerDoc("v1", new OpenApiInfo 
+            { 
+                Title = "Order Management API", 
+                Version = "v1",
+                Description = "API for managing products, orders & invoices"
+            });
 
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+        });
+        
         return services;
     }
 
