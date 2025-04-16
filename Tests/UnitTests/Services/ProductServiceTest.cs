@@ -61,7 +61,7 @@ public class ProductServiceTest : UnitTestBase
         var request = new AutoFaker<UpdateProductDiscountRequestModel>().Generate();
 
         await _service.UpdateProductDiscountAsync(productId, request);
-        
+
         _productRepositoryMock.Verify(r => r.UpdateProductDiscountAsync(productId, IsDeep(request)), Times.Once);
         _dbContextMock.Verify(db => db.Commit(), Times.Once);
     }

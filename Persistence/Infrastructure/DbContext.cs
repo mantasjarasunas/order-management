@@ -12,7 +12,7 @@ namespace Persistence.Infrastructure
         void Commit();
         void Rollback();
     }
-    
+
     public class DbContext : IDbContext, IDisposable
     {
         private readonly IDbConnectionFactory _connectionFactory;
@@ -85,18 +85,18 @@ namespace Persistence.Infrastructure
         {
             Connection?.Close();
             Connection?.Dispose();
-            
+
             if (_transaction != null)
             {
                 Transaction?.Dispose();
             }
-            
+
             _connection = null;
             _transaction = null;
             _unitOfWork = null;
         }
     }
-    
+
     public enum IDbContextState
     {
         Closed,

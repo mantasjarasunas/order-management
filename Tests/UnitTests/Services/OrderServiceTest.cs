@@ -52,7 +52,7 @@ public class OrderServiceTest : UnitTestBase
 
         result.Should().BeEquivalentTo(expected);
     }
-    
+
     [Fact]
     public async Task GetOrderInvoiceAsync_WithValidOrderId_ReturnsInvoiceWithCorrectTotal()
     {
@@ -69,4 +69,4 @@ public class OrderServiceTest : UnitTestBase
         result.Items.Should().BeEquivalentTo(items);
         result.TotalAmount.Should().Be(33);
     }
-} 
+}

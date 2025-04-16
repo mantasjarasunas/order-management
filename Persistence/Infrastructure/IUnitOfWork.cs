@@ -9,7 +9,7 @@ namespace Persistence.Infrastructure
         Committed,
         RolledBack
     }
-    
+
     public interface IUnitOfWork
     {
         UnitOfWorkState State { get; }
@@ -17,7 +17,7 @@ namespace Persistence.Infrastructure
         void Commit();
         void Rollback();
     }
-    
+
     public class UnitOfWork(IDbTransaction transaction) : IUnitOfWork
     {
         public UnitOfWorkState State { get; private set; } = UnitOfWorkState.Open;

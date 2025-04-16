@@ -42,7 +42,7 @@ public class OrderController(IOrderService orderService) : ControllerBase
         var result = await orderService.GetOrderInvoiceAsync(orderId);
         return Ok(result);
     }
-    
+
     /// <summary>
     /// Retrieves report with a list of discounted products
     /// </summary>
