@@ -30,7 +30,8 @@ public class OrderRepository(IDbContext dbContext) : DbRepository(dbContext), IO
             VALUES (@OrderId, @ProductId, @Quantity);
         ";
 
-        var orderProducts = model.Products.Select(p => new {
+        var orderProducts = model.Products.Select(p => new
+        {
             OrderId = orderId,
             p.ProductId,
             p.Quantity
@@ -38,7 +39,7 @@ public class OrderRepository(IDbContext dbContext) : DbRepository(dbContext), IO
 
         await Connection.ExecuteAsync(insertOrderProductQuery, orderProducts);
     }
-    
+
     public async Task<List<OrderListItem>> GetOrdersAsync()
     {
         const string query = @"
@@ -98,7 +99,7 @@ public class OrderRepository(IDbContext dbContext) : DbRepository(dbContext), IO
         ";
 
         var result = await Connection.QueryAsync<OrderInvoiceItemModel>(query, new { OrderId = orderId });
-        
+
         return result.ToList();
     }
 
@@ -116,9 +117,9 @@ public class OrderRepository(IDbContext dbContext) : DbRepository(dbContext), IO
             WHERE p.discount_percentage IS NOT NULL
             GROUP BY p.id, p.name, p.discount_percentage
             ORDER BY TotalAmountOrdered DESC;";
-        
+
         var result = await Connection.QueryAsync<DiscountedOrderProductsListItemModel>(query);
-        
+
         return result.ToList();
     }
 }

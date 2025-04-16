@@ -40,15 +40,15 @@ public static class ConfigureServices
                 return connection;
             });
         });
-        
+
         RegisterBusinessServices(services);
         RegisterRepositories(services);
 
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo 
-            { 
-                Title = "Order Management API", 
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "Order Management API",
                 Version = "v1",
                 Description = "API for managing products, orders & invoices"
             });
@@ -57,7 +57,7 @@ public static class ConfigureServices
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
         });
-        
+
         return services;
     }
 
@@ -65,14 +65,14 @@ public static class ConfigureServices
     {
         services.AddScoped<IDbContext, DbContext>();
         var repositories = Assembly.GetAssembly(typeof(DbRepository))
-            ?.GetTypes().Where(t=>t.Namespace != null && t.Namespace.Contains("Repositories")).ToList();
+            ?.GetTypes().Where(t => t.Namespace != null && t.Namespace.Contains("Repositories")).ToList();
 
         if (repositories != null)
         {
             foreach (var repositoryInterface in repositories.Where(t => t.IsInterface))
             {
                 var implementation = repositories.FirstOrDefault(c => c.IsClass && repositoryInterface.Name[1..] == c.Name);
-                
+
                 if (implementation != null)
                 {
                     services.AddScoped(repositoryInterface, implementation);
@@ -80,7 +80,7 @@ public static class ConfigureServices
             }
         }
     }
-        
+
     private static void RegisterBusinessServices(IServiceCollection services)
     {
         var assembly = Assembly.GetAssembly(typeof(IProductService));
@@ -101,7 +101,7 @@ public static class ConfigureServices
             }
         }
     }
-    
+
     /// <summary>
     /// Configure the dependency injection services
     /// </summary>
@@ -116,13 +116,13 @@ public static class ConfigureServices
             .AddLogging(lb => lb.AddFluentMigratorConsole())
             .BuildServiceProvider(false);
     }
-    
+
     private static void ConfigureSettings(IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
         ConfigurationHelper.Initialize(configuration);
     }
-    
+
     /// <summary>
     /// Update the database
     /// </summary>

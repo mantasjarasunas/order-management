@@ -11,7 +11,7 @@ namespace Persistence.Infrastructure
             parameters.Add("name", name);
             using var connection = new NpgsqlConnection(connectionString);
             var records = connection.Query("SELECT datname FROM pg_database WHERE datname = @name", parameters);
-            
+
             if (!records.Any())
             {
                 connection.Execute($"CREATE DATABASE {name}");

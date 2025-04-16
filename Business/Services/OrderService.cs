@@ -19,12 +19,12 @@ public class OrderService(IOrderRepository orderRepository, IDbContext dbContext
         await orderRepository.CreateOrderAsync(model);
         dbContext.Commit();
     }
-    
+
     public async Task<List<OrderListItem>> GetOrdersAsync()
     {
         return await orderRepository.GetOrdersAsync();
     }
-    
+
     public async Task<OrderInvoiceSummaryModel> GetOrderInvoiceAsync(long orderId)
     {
         var items = await orderRepository.GetOrderInvoiceItemsAsync(orderId);

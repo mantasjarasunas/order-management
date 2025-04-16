@@ -53,7 +53,7 @@ public class ProductRepository(IDbContext dbContext) : DbRepository(dbContext), 
 
         return await Connection.QueryAsync<ProductListItemModel>(query, new { searchQuery });
     }
-    
+
     public async Task UpdateProductDiscountAsync(long productId, UpdateProductDiscountRequestModel model)
     {
         const string query = @"
