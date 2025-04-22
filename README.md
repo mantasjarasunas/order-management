@@ -101,6 +101,8 @@ dotnet test
 ## Room for improvements
 
 ```text
+
+- Since project was made using web application init setup, should consider removing all front-end related usages.
 - Add pagination support for endpoints like GetOrders and GetFilteredProducts.
 - Add validation tests to verify rules such as preventing negative prices.
 - Return total item count alongside paged responses for frontend UI pagination.
